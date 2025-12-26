@@ -1,0 +1,18 @@
+[project]
+name = "elastin_fiber_utils" # Must be unique on PyPI
+dynamic =["version"]
+description = "Functions for analyzing LAMMPS logfiles"
+authors = [
+    { name = "SeyedMostafa HosseiniNasab", email = "mostafa@uconn.edu" }
+]
+license = "MIT"
+requires-python = ">=3.8"
+dependencies = [] # List any dependencies here
+license-files = ["LICEN[CS]E*"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "elastin_fiber_utils.__version__"}
