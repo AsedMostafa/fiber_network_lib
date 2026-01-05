@@ -1,4 +1,4 @@
-__version__ = "0.1.1"
+__version__ = "0.1.3"
 
 from . import (
     fragment_fiber,
@@ -7,6 +7,7 @@ from . import (
     pulling_data,
     fiber_concatnation,
     misc_func,
-    ovito_helper
+    ovito_helper,
+    dataloader
 )
 
