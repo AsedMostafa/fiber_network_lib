@@ -7,8 +7,44 @@ from typing import List
 class lazy_loader:
 
     def __init__(self, data_name: str, log_file: str):
+        """
+        Initialize the lazy_loader class.
+
+        Parameters
+        ----------
+        data_name : str
+            name of the saved npz file
+        log_file : str
+            path to the lammps log file
+
+        Attributes
+        ----------
+        log_file : str
+            path to the lammps log file
+        data_name : str
+            name of the saved npz file
+        meta_data_info : List[str]
+            list of metadata info
+        meta_data : np.ndarray
+            array to store the metadata
+        run_block_info : List[int]
+            number of rows in each run block
+        main_commands : List[str]
+            list of main commands in the lammps log file
+        full_data : List[np.array]
+            list of full data blocks
+        """
+        
         self.log_file = log_file
         self.data_name = data_name
+        self.meta_data_info: List = [
+            "saved_state",
+            "pull",
+            "dynamic_relaxation",
+            "minimize"
+        ]
+        self.meta_data: np.ndarray = np.zeros(len(self.meta_data_info), dtype=int)
+        self.run_block_info: List = [0, 1, 2000] # number of rows in each run block
         self.main_commands: List[str] = ["run", "minimize"]
         self.full_data: List[np.array] = []
 
@@ -19,8 +55,10 @@ class lazy_loader:
             if line[0] in self.main_commands:
                 self.block_handler(reader, line)
 
+
     def save(self):
-        np.savez(self.data_name, *self.full_data)
+        self.full_data.append(self.meta_data)
+        np.savez_compressed(self.data_name, *self.full_data)
 
     def read_log_lammps(self, log_file: str):
         with open(log_file, 'r') as f:
@@ -56,13 +94,18 @@ class lazy_loader:
                 current_line = next(gen_func)
                 continue
             min_data.append(current_line)
-            current_line = next(gen_func)
+            try:
+                current_line = next(gen_func)
+            except StopIteration:
+                break
 
         return np.array(min_data)
-
+    
     def block_handler(self, gen_func: str, current_line: str):
         if current_line[0] == "run":
             self.full_data.append(self.run_block_handler(gen_func, int(current_line[1])))
+            self.meta_data[self.run_block_info.index(int(current_line[1]))] += 1
         else:
             self.full_data.append(self.minimize_block_handler(gen_func))
+            self.meta_data[-1] += 1
 
