@@ -73,6 +73,48 @@ class LmpData:
             self.bonds[i, 0:3] = data_line[1:]
         self.bonds[:, 1:3] -= 1
 
+    def make_lmp_file(self, file_name):
+        dtype = dict(zip(['id', 'molecule', 'type','x', 'y', 'z'], [0, 1, 2, 3, 4, 5]))
+        natoms = self.n_atoms
+        ntypes = 2
+        atoms = np.zeros((natoms,6))
+        atoms[:,dtype.get('id')] = np.arange(1,natoms+1)
+        atoms[:,dtype.get('molecule')] = np.ones((natoms,1)).reshape(-1)
+        atoms[:, dtype.get('x')] = self.atoms[:, 1]
+        atoms[:, dtype.get('y')] = self.atoms[:, 2]
+        atoms[:, dtype.get('z')] = 0
+        bonds = np.zeros((self.n_bonds, 4), dtype=np.int32)
+        bonds[:, 0] = np.arange(1,self.n_bonds+1)
+        bonds[:, 1:4] = self.bonds[:, 0:3]
+        bonds[:, 2:4] += 1
+        outfile = file_name + '.data'
+
+        with open(outfile, "w") as outfile:
+            outfile.write("LAMMPS data")
+            outfile.write("\n%d atoms\n" % natoms)
+            outfile.write("\n%d atom types\n" % ntypes)
+            outfile.write("\n%d bonds\n" % self.n_bonds)
+            outfile.write("\n%d bond types\n" % 3)
+
+            outfile.write("\n%12.5E %12.5E xlo xhi\n" % (self.boundaries['x'][0], self.boundaries['x'][1]))
+            outfile.write("%12.5E %12.5E ylo yhi\n" % (self.boundaries['y'][0], self.boundaries['y'][1]))
+            outfile.write("%12.5E %12.5E zlo zhi\n" % (-0.5, 0.5))
+
+            outfile.write("\nMasses\n\n")
+            for i in range(ntypes):
+                outfile.write("%5d\t%9.3E\n" % (i+1,1))
+            outfile.write("\nAtoms # bond\n\n")
+            for i in range(natoms):
+                    outfile.write("%5d\t%d\t%d\t%10.3f\t%10.3f\t%10.3f\n" % (atoms[i,dtype.get('id')],
+                                                                                atoms[i,dtype.get('molecule')],
+                                                                                1,
+                                                                                atoms[i,dtype.get('x')],
+                                                                                atoms[i,dtype.get('y')],
+                                                                                atoms[i,dtype.get('z')]))
+            outfile.write("\nBonds\n\n")
+            for j in range(self.n_bonds):
+                outfile.write("%5d\t%5d\t%5d\t%5d\n" % (bonds[j,0], bonds[j,1], bonds[j,2], bonds[j,3]))
+
 
 def get_color(particle_position, bonds):
     first_row = particle_position[bonds[:, 1], 1:3]
