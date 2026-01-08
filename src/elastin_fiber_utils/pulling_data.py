@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 class pulling_data:
     def __init__(self, data):
         self.data = data
@@ -12,8 +15,6 @@ class pulling_data:
         length = pulling_direction_map[p_dir][0]
         pressure = pulling_direction_map[p_dir][1]
         self.data['strain'] = (self.data[length] - self.data[length][0]) / self.data[length][0] 
-        # self.data['strain'] = np.linspace(0, 1.5, 1500)       
-      
         self.data['stress'] = -1 * self.data[pressure] * 101325 * 1e-9
         self.data.rename(columns={'f_111[2]': 'broken_bonds'}, inplace=True)
 
@@ -25,19 +26,19 @@ class pulling_data:
         self.max_stress = self.data['stress'].max()
         self.failure_strain = self.data['strain'][self.data['stress'].idxmax()]
 
-    def get_toughness(self, df):
+    def get_toughness(self, df: pd.DataFrame):
         max_stress = df['stress'].max()
         idxss = df.index[df['stress'] < max_stress / 2]
         try:
             first_break = idxss[np.where(np.diff(idxss) > 1)[0][0]]
         except IndexError:
-            return np.trapz(df['stress'], x=df['strain'])
+            return np.trapezoid(df['stress'], x=df['strain'])
         neg_idx = idxss[first_break+1:]
         if not neg_idx.empty:
             cutoff = neg_idx[0]   # take the first negative index
             df = df.loc[:cutoff-1]
             self.break_strain_index = cutoff
-        return np.trapz(df['stress'], x=df['strain'])
+        return np.trapezoid(df['stress'], x=df['strain'])
 
     def get_elastisity(self, df):
         idxss = df.index[df['strain'] < 0.7]
