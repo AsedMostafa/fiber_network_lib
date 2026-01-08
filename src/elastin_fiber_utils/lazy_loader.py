@@ -1,5 +1,6 @@
 import numpy as np
-from typing import List
+from collections.abc import Generator
+
 
 # To do --> implement the pytables for better data control
 # Maybe refactor later?
@@ -37,16 +38,16 @@ class lazy_loader:
         
         self.log_file = log_file
         self.data_name = data_name
-        self.meta_data_info: List = [
+        self.meta_data_info: list = [
             "saved_state",
             "pull",
             "dynamic_relaxation",
             "minimize"
         ]
         self.meta_data: np.ndarray = np.zeros(len(self.meta_data_info), dtype=int)
-        self.run_block_info: List = [0, 1, 2000] # number of rows in each run block
-        self.main_commands: List[str] = ["run", "minimize"]
-        self.full_data: List[np.array] = []
+        self.run_block_info: list = [0, 1, 2000] # number of rows in each run block
+        self.main_commands: list[str] = ["run", "minimize"]
+        self.full_data: list[np.ndarray] = []
 
     def read(self, log_file: str):
         reader = self.read_log_lammps(log_file)
@@ -66,7 +67,7 @@ class lazy_loader:
                 if raw_line.strip():
                     yield raw_line.split()
 
-    def run_block_handler(self, gen_function, line_count: int):
+    def run_block_handler(self, gen_function: Generator, line_count: int):
 
         rows_number = line_count+1
         data = np.zeros((rows_number, 15))
@@ -101,7 +102,7 @@ class lazy_loader:
 
         return np.array(min_data)
     
-    def block_handler(self, gen_func: str, current_line: str):
+    def block_handler(self, gen_func: Generator, current_line: list[str]):
         if current_line[0] == "run":
             self.full_data.append(self.run_block_handler(gen_func, int(current_line[1])))
             self.meta_data[self.run_block_info.index(int(current_line[1]))] += 1
