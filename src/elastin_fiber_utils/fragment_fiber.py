@@ -1,12 +1,12 @@
 import numpy as np
 
 class FragmentFiber:
-    def __init__(self, bonds, particles):
+    def __init__(self, lmp_data):
 
-        self.bonds = bonds
-        self.particles = particles
-        self.n_bonds = bonds.shape[0]
-        self.n_particles = particles.shape[0]
+        self.bonds = lmp_data.bonds
+        self.particles = lmp_data.particles
+        self.n_bonds = lmp_data.n_bonds
+        self.n_particles = lmp_data.n_bonds
         self.y_mean = self.particles[:, 2].mean()
 
 
