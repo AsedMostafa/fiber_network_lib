@@ -24,13 +24,13 @@ class prepareData:
         pulling_numbers.pre_process(kwargs['pulling_direction'])
         return pulling_numbers
 
-    def extract_log_data(self, log_file: str, data_name: str,):
+    def extract_log_data(self, log_file: str, data_name: str):
         """
         Extracts the data from the log file
         data name: saved npz file
         log file: lammps log file path
         """
-        data = lazy_loader.lazy_loader(data_name, log_file)
+        data = lazy_loader.lazy_loader(data_name, log_file, len(self._columns))
         data.read(log_file)
         data.save()
 
@@ -39,7 +39,7 @@ class prepareData:
 
     def prepare_data(self, data: np.lib.npyio.NpzFile) -> pd.DataFrame:
         captured_states = len(data)
-        states_data = np.zeros((int(data[f'arr_{captured_states-1}'][0]), 15))
+        states_data = np.zeros((int(data[f'arr_{captured_states-1}'][0]), len(self._columns)))
 
         i = 0
         for value in data.values():
