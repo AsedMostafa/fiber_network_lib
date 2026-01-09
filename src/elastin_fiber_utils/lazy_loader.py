@@ -7,7 +7,7 @@ from collections.abc import Generator
 
 class lazy_loader:
 
-    def __init__(self, data_name: str, log_file: str):
+    def __init__(self, data_name: str, log_file: str, n_col: int):
         """
         Initialize the lazy_loader class.
 
@@ -17,7 +17,8 @@ class lazy_loader:
             name of the saved npz file
         log_file : str
             path to the lammps log file
-
+        Number of columns: int
+            number of columns in the lammps log file
         Attributes
         ----------
         log_file : str
@@ -36,8 +37,9 @@ class lazy_loader:
             list of full data blocks
         """
         
-        self.log_file = log_file
-        self.data_name = data_name
+        self.log_file: str = log_file
+        self.data_name: str = data_name
+        self.n_columns: int = n_col
         self.meta_data_info: list = [
             "saved_state",
             "pull",
@@ -70,7 +72,7 @@ class lazy_loader:
     def run_block_handler(self, gen_function: Generator, line_count: int):
 
         rows_number = line_count+1
-        data = np.zeros((rows_number, 15))
+        data = np.zeros((rows_number, self.n_columns))
         current_line = next(gen_function)
 
         while current_line[0] != "Step":
@@ -91,7 +93,7 @@ class lazy_loader:
         current_line = next(gen_func)
 
         while current_line[0] != "Loop":
-            if len(current_line) != 15:
+            if len(current_line) != self.n_columns:
                 current_line = next(gen_func)
                 continue
             min_data.append(current_line)
