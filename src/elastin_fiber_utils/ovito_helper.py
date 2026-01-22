@@ -18,14 +18,14 @@ class OvitoHelper:
 
     def load_data(self):
         return import_file(
-            self.input_file,
+            self._input_file,
             multiple_frames=False,
             atom_style=self._atom_style)
     
     def export_data(self, data):
         export_file(
             data,
-            self.output_file,
+            self._output_file,
             "lammps/data",
             atom_style=self._atom_style,
             ignore_identifiers=True
