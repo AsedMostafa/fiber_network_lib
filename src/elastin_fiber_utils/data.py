@@ -35,8 +35,8 @@ class LmpData:
         """
         self.n_atoms: int = 0
         self.n_bonds: int = 0
-        self.atoms: np.ndarray = np.zeros(1)
-        self.bonds: np.ndarray = np.zeros(1)
+        self.atoms: np.ndarray|None = None
+        self.bonds: np.ndarray|None = None
         self.boundaries = {'x': [],
                            'y': [],
                            'z': []}
@@ -103,6 +103,9 @@ class LmpData:
         self.bonds[:, 1:3] -= 1
 
     def write_lammps_file(self, file_name):
+        if self.atoms is None or self.bonds is None:
+            raise ValueError("Atoms or bonds not loaded")
+        
         dtype = dict(zip(['id', 'molecule', 'type','x', 'y', 'z'], [0, 1, 2, 3, 4, 5]))
         natoms = self.n_atoms
         ntypes = 2
@@ -148,8 +151,8 @@ class LmpData:
 class FragmentFiber:
     def __init__(self, lmp_data):
 
-        self.bonds = lmp_data.bonds
-        self.particles = lmp_data.particles
+        self.bonds = lmp_data.bonds[:, 1:3]
+        self.particles = lmp_data.atoms
         self.n_bonds = lmp_data.n_bonds
         self.n_particles = lmp_data.n_bonds
         self.y_mean = self.particles[:, 2].mean()
