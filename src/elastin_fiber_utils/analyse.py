@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from dataloader import prepareData 
+from . import dataloader 
 import re
 
 class Simulation:
@@ -46,7 +46,7 @@ class Simulation:
                 raise ValueError(f"Invalid file name: {path}")
             
             frag_value = int(temp_replica.group(1))      
-            loaded_data = prepareData().load_to_memory(isLog=False, data_name=path, pulling_direction=self._meta_data['pulling_direction'])
+            loaded_data = dataloader.prepareData().load_to_memory(isLog=False, data_name=path, pulling_direction=self._meta_data['pulling_direction'])
             replica_holder[frag_value].append_data(loaded_data)
 
         return replica_holder
