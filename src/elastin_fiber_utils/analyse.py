@@ -7,9 +7,33 @@ class Simulation:
     def __init__(self, meta_data: dict) -> None:
         self._meta_data = meta_data
         self.replica_holder: None|dict = None
-    
+        self.prepare_metadata()
     def is_converged(self):
         pass
+
+    def get_files(self, root_dir: Path, _pattern: str) -> list[Path]:
+        files: Iterator[Path] = root_dir.glob(pattern=_pattern)
+        sorted_files = sorted(files, key=self.sort_replicas)
+        return sorted_files
+
+    def prepare_metadata(self):
+        os.chdir(self._meta_data['root_path'])
+        root_directory = Path(self._meta_data['root_path'])
+        self._meta_data['npz_files'] = self.get_files(root_directory, self._meta_data['pattern'])
+        self._meta_data['n_total'] = 0
+        self._details = {}
+        for p in self._meta_data['npz_files']:
+            if p.parent.name not in self._details:
+                self._details[p.parent.name] = 1
+            else:
+                self._details[p.parent.name] += 1
+            self._meta_data['n_total'] += 1
+        
+        how_many_frags = np.array([i for i in self._details.values()])
+        if np.unique(how_many_frags).shape[0] > 1:
+            raise ValueError("Not all replicas have the same number of fragments.")
+
+        self._meta_data['n_replicas'] = how_many_frags[0]
 
     @property
     def data(self):
