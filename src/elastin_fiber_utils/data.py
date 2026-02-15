@@ -234,7 +234,11 @@ class PrepareData:
             'PotEng', 'KinEng', 'Temp', 'v_max_bond_length', 'f_111[1]',
             'f_111[2]'] 
         
-    def update_columns(self, columns):
+    @property
+    def columns(self):
+        return self._columns
+    @columns.setter
+    def columns(self, columns):
         self._columns = columns
 
     def get_columns(self):
