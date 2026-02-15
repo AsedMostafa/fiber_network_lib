@@ -241,9 +241,6 @@ class PrepareData:
     def columns(self, columns):
         self._columns = columns
 
-    def get_columns(self):
-        return self._columns
-
     def load_to_memory(self, isLog: bool, **kwargs) -> pulling_data.pulling_data:
         if isLog:
             self.extract_log_data(kwargs['log_file'], kwargs['data_name'])
