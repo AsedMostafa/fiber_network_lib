@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
-from . import dataloader 
+from . import data
 import re
+import os
+from collections.abc import Iterator
+from pathlib import Path
 
 class Simulation:
     def __init__(self, meta_data: dict) -> None:
@@ -39,6 +42,9 @@ class Simulation:
     def data(self):
         return self.replica_holder
     
+    def sort_replicas(self, path: Path) -> tuple[str, float]: 
+        return path.parent.name, float(path.stem)
+    
     def __getitem__(self, idx):
         if self.replica_holder is None:
             raise ValueError("No data is not loaded yet.")
@@ -48,32 +54,19 @@ class Simulation:
         to_be_printed = f'Simulation: {self._meta_data["name"]}\n with {self._meta_data["n_replicas"]} replicas\n and {self._meta_data["n_fragments"]} fragments\n'
         return to_be_printed
 
-    def sort_addresses(self, path: str) -> tuple[int, int]:
-        temp_replica = re.search(r'(\d+)(?=\.npz)', path)
-        temp_ts = re.search(r'v?(\d+)', path)
-
-        if not temp_replica or not temp_ts:
-            raise ValueError(f"Invalid file name: {path}")
-        
-        return int(temp_ts.group(1)), int(temp_replica.group(1))
-    
-    def load_data(self):
-        loaded_replica = self.load_replica()
-
     def load_replica(self):
-        replica_holder = {ts: Replica() for ts in np.arange(1, self._meta_data['n_replicas'] + 1)}
-        sorted_files = sorted(self._meta_data['npz_files'], key=self.sort_addresses)
+        '''
+        You can implemenet change in the number of the columns here
+        Maybe in the future
+        '''
 
-        for path in sorted_files:
-            temp_replica = re.search(r'(\d+)(?=\.npz)', path)
-            if not temp_replica:
-                raise ValueError(f"Invalid file name: {path}")
-            
-            frag_value = int(temp_replica.group(1))      
-            loaded_data = dataloader.prepareData().load_to_memory(isLog=False, data_name=path, pulling_direction=self._meta_data['pulling_direction'])
-            replica_holder[frag_value].append_data(loaded_data)
 
-        return replica_holder
+        self.replica_holder = {ts: Replica() for ts in np.arange(1, self._meta_data['n_replicas'] + 1)}
+        data_handler = data.PrepareData()
+        for path in self._meta_data['npz_files']:
+            frag_value = int(float(path.stem))
+            loaded_data = data_handler.load_to_memory(isLog=False, data_name=path, pulling_direction=self._meta_data['pulling_direction'])
+            self.replica_holder[frag_value].append_data(loaded_data)
 
 
 class Replica:
@@ -112,6 +105,14 @@ class Replica:
         for idx, data in enumerate(self.datas):
             self._toughness[idx] = data.toughness
         return self._toughness
+    
+    @property
+    def hyperelastic_params(self):
+        self._hyperelastic_params = np.zeros((self.n_replicas, 3))
+        for idx, data in enumerate(self.datas):
+            self._hyperelastic_params[idx] = data.params['yeoh_incompressible']
+
+        return self._hyperelastic_params
     
     def append_data(self, data):
         self.datas.append(data)
