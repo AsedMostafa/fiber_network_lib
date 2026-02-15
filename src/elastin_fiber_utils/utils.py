@@ -59,8 +59,12 @@ class OvitoHelper:
         pl.modifiers.append(ExpressionSelectionModifier(expression = 'BondType == 1', operate_on='bonds'))
         pl.modifiers.append(DeleteSelectedModifier())
         return pl
-    
 
+def yeoh_incompressible(l, c1, c2, c3):
+    I1 = l**2 + 1/l**2 + 1
+    term = I1 - 3
+    stress = 2*(c1+ 2*c2*term + 3*c3*(term)**2)*(l**2 - 1/l**2)
+    return stress
 
 def get_position(particles_data, p1, p2):
     first_row = particles_data[p1, 1:3]
