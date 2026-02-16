@@ -150,6 +150,18 @@ class LmpData:
             for j in range(self.n_bonds):
                 outfile.write("%5d\t%5d\t%5d\t%5d\n" % (bonds[j,0], bonds[j,1], bonds[j,2], bonds[j,3]))
 
+    def stiff(self, stiffness_portion):
+        '''
+        Docstring for stiff
+        
+        :param stiffness_portion: How much of the bonds should be stiffened (between 0 and 1)
+        '''
+        n_stiffened = int(self.n_bonds * stiffness_portion)
+        stiffened_idx = np.random.choice(self.n_bonds, size=n_stiffened, replace=False)
+        self.bonds[stiffened_idx, 0] = 2
+
+
+
 
 class FragmentFiber:
     def __init__(self, lmp_data):
