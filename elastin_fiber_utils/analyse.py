@@ -65,7 +65,11 @@ class Simulation:
         data_handler = data.PrepareData()
         for path in self._meta_data['npz_files']:
             frag_value = int(float(path.stem))
-            loaded_data = data_handler.load_to_memory(isLog=False, data_name=path, pulling_direction=self._meta_data['pulling_direction'])
+            if self._meta_data['stress_factor']:
+                loaded_data = data_handler.load_to_memory(isLog=False, data_name=path, 
+                                                          pulling_direction=self._meta_data['pulling_direction'], stress_factor=self._meta_data['stress_factor'])
+            else:    
+                loaded_data = data_handler.load_to_memory(isLog=False, data_name=path, pulling_direction=self._meta_data['pulling_direction'])
             self.replica_holder[frag_value].append_data(loaded_data)
 
 

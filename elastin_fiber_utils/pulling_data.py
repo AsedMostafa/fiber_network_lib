@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
-from utils import yeoh_incompressible
+from .utils import yeoh_incompressible
 from scipy.optimize import curve_fit
 
 class pulling_data:
-    def __init__(self, data):
+    def __init__(self, data, stress_factor=0.5 * 101325 * 1e-9):
         self.data: pd.DataFrame = data
+        self.fudge = stress_factor
         self.break_strain_index = None    
         self.elasticity_modulus = None
         self.toughness = None
@@ -19,7 +20,7 @@ class pulling_data:
         length = pulling_direction_map[p_dir][0]
         pressure = pulling_direction_map[p_dir][1]
         self.data['strain'] = (self.data[length] - self.data[length][0]) / self.data[length][0] 
-        self.data['stress'] = -1 * self.data[pressure] * 0.5 * 101325 * 1e-9
+        self.data['stress'] = -1 * self.data[pressure] * self.fudge
         self.data.rename(columns={'f_111[2]': 'broken_bonds'}, inplace=True)
 
     @property

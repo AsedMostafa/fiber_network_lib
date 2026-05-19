@@ -158,6 +158,8 @@ class LmpData:
         '''
         n_stiffened = int(self.n_bonds * stiffness_portion)
         stiffened_idx = np.random.choice(self.n_bonds, size=n_stiffened, replace=False)
+        if self.bonds is None:
+            raise ValueError("Bonds are not loaded")
         self.bonds[stiffened_idx, 0] = 2
 
 
@@ -258,7 +260,10 @@ class PrepareData:
             self.extract_log_data(kwargs['log_file'], kwargs['data_name'])
         raw_data = self.load_log_data(kwargs['data_name'])
         raw_data_prepared = self.prepare_data(raw_data)
-        pulling_numbers = pulling_data.pulling_data(raw_data_prepared)
+        if kwargs['stress_factor']:
+            pulling_numbers = pulling_data.pulling_data(raw_data_prepared, stress_factor=kwargs['stress_factor'])
+        else:
+            pulling_numbers = pulling_data.pulling_data(raw_data_prepared)
         pulling_numbers.pre_process(kwargs['pulling_direction'])
         return pulling_numbers
 
