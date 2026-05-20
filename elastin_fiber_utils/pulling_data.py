@@ -66,7 +66,7 @@ class pulling_data:
         return np.trapezoid(df['stress'], x=df['strain'])
 
     def get_elastisity(self, df):
-        idxss = df.index[df['strain'] < 0.7]
+        idxss = df.index[df['strain'] < 1]
         df = df.loc[idxss]
         slope = (df['strain']*df['stress']).sum() / (df['strain'] * df['strain']).sum()
         return slope

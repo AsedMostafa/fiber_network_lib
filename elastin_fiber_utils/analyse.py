@@ -69,6 +69,7 @@ class Simulation:
                 self._meta_data['stress_factor'] = 2
             else:
                 self._meta_data['stress_factor'] = 1
+
             if self._meta_data['stress_factor']:
                 loaded_data = data_handler.load_to_memory(isLog=False, data_name=path, 
                                                           pulling_direction=self._meta_data['pulling_direction'], stress_factor=self._meta_data['stress_factor'])
@@ -115,6 +116,13 @@ class Replica:
         return self._toughness
     
     @property
+    def elasticity_modulus(self):
+        self._elasticity_modulus = np.zeros(self.n_replicas)
+        for idx, data in enumerate(self.datas):
+            self._elasticity_modulus[idx] = data.elasticity_modulus
+        return self._elasticity_modulus
+    
+    @property
     def hyperelastic_params(self):
         self._hyperelastic_params = np.zeros((self.n_replicas, 3))
         for idx, data in enumerate(self.datas):
@@ -128,14 +136,19 @@ class Replica:
 
     def get_mean_stress(self):
         for idx, data in enumerate(self.datas):
-            self.all_stresses[f'{idx}'] = data.data['stress']
+            if data.stress.shape[0] > 2500:
+                self.all_stresses[f'{idx}'] = data.stress[:2500]
+            else:
+                tempelate = np.zeros(2500)
+                tempelate[:data.stress.shape[0]] = data.stress
+                self.all_stresses[f'{idx}'] = tempelate
         return self.all_stresses.mean(axis=1)
     
     def get_std(self):
         return self.all_stresses.std(axis=1)
   
     def get_strain(self):
-        return self.datas[0].data['strain']
+        return self.datas[0].strain[:2500]
     
     def get_CI(self):
         return
