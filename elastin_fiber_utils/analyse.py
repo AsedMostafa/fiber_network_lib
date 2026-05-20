@@ -65,6 +65,10 @@ class Simulation:
         data_handler = data.PrepareData()
         for path in self._meta_data['npz_files']:
             frag_value = int(float(path.stem))
+            if int(path.parent.name) > 16:
+                self._meta_data['stress_factor'] = 2
+            else:
+                self._meta_data['stress_factor'] = 1
             if self._meta_data['stress_factor']:
                 loaded_data = data_handler.load_to_memory(isLog=False, data_name=path, 
                                                           pulling_direction=self._meta_data['pulling_direction'], stress_factor=self._meta_data['stress_factor'])

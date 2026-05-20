@@ -244,6 +244,22 @@ class FragmentFiber:
 
 class PrepareData:
     def __init__(self):
+        
+        self.master_columns = {
+            15: ['Step', 'Pxx', 'Pyy', 'Lx', 'Ly', 'Xlo', 'Xhi', 'Ylo', 'Yhi', 
+                'PotEng', 'KinEng', 'Temp', 'v_max_bond_length', 'f_111[1]',
+                'f_111[2]'] ,
+            16: ['Step', 'Time','Pxx', 'Pyy', 'Lx', 'Ly', 'Xlo', 'Xhi', 'Ylo', 'Yhi', 
+                'PotEng', 'KinEng', 'Temp', 'v_max_bond_length', 'f_111[1]',
+                'f_111[2]'] ,
+            17: ['Step', 'Time','Pxx', 'Pyy', 'Lx', 'Ly', 'Xlo', 'Xhi', 'Ylo', 'Yhi', 
+                'PotEng', 'KinEng', 'Temp', 'v_max_bond_length', 'f_111[1]',
+                'f_111[2]', 'v_ylen'] ,
+            18: ['Step', 'Pxx', 'Pyy', 'Lx', 'Ly', 'Xlo', 'Xhi', 'Ylo', 'Yhi', 
+                'PotEng', 'KinEng', 'Temp', 'v_max_bond_length', 'f_111[1]',
+                'f_111[2]', 'f_112[1]', 'f_112[2]', 'v_ylen']
+        }
+
         self._columns = ['Step', 'Pxx', 'Pyy', 'Lx', 'Ly', 'Xlo', 'Xhi', 'Ylo', 'Yhi', 
             'PotEng', 'KinEng', 'Temp', 'v_max_bond_length', 'f_111[1]',
             'f_111[2]'] 
@@ -282,6 +298,7 @@ class PrepareData:
 
     def prepare_data(self, data: np.lib.npyio.NpzFile) -> pd.DataFrame:
         captured_states = len(data)
+        self._columns = self.master_columns.get(data['arr_0'].shape[1])
         states_data = np.zeros((int(data[f'arr_{captured_states-1}'][0]), len(self._columns)))
 
         i = 0
